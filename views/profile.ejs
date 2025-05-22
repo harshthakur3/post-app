@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-zinc-900 to-black text-white min-h-screen py-10 px-4">
+
+  <div class="w-full max-w-6xl mx-auto space-y-12">
+
+    <!-- Header -->
+    <div class="text-center">
+      <h1 class="text-4xl font-extrabold tracking-tight text-white">Welcome, <%= user.name %> 👋</h1>
+      <p class="text-zinc-400 mt-2 text-lg">Start expressing your thoughts with a post!</p>
+    </div>
+
+    <!-- Post Form -->
+    <form action="/post" method="post" class="bg-zinc-800 p-6 rounded-xl shadow-lg space-y-4 border border-zinc-700">
+      <textarea 
+        name="content" 
+        rows="4"
+        class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-4 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none transition"
+        placeholder="What's on your mind?"
+        required
+      ></textarea>
+      <div class="flex items-center justify-between">
+        <input 
+          type="submit" 
+          value="Create New Post" 
+          class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition px-6 py-2 rounded-lg text-white font-medium cursor-pointer"
+        />
+        <a 
+          href="/logout" 
+          class="bg-red-600 hover:bg-red-700 active:bg-red-800 px-5 py-2 rounded-lg text-white text-sm font-medium transition"
+        >
+          Logout
+        </a>
+      </div>
+    </form>
+
+    <!-- Posts Section -->
+    <div class="space-y-6">
+      <h3 class="text-2xl font-semibold border-b border-zinc-700 pb-2">Your Recent Posts</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% user.post.slice().reverse().forEach(function(post){ %>
+          <div class="bg-zinc-800 p-5 rounded-xl border border-zinc-700 shadow hover:shadow-xl transition duration-300">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-blue-400 font-semibold text-lg">@<%= user.username %></h4>
+              <span class="text-xs text-zinc-500"><%= new Date(post.date).toLocaleDateString() %></span>
+            </div>
+            <p class="text-zinc-200 mb-3 leading-relaxed"><%= post.content %></p>
+            <small class="block text-zinc-400 mb-2"><%= post.likes.length %> like<%= post.likes.length !== 1 ? 's' : '' %></small>
+            <div class="flex gap-4 text-sm">
+              <a 
+                href="/like/<%= post._id %>" 
+                class="text-blue-500 hover:underline font-medium"
+              >
+                <%= post.likes.includes(user._id) ? "Unlike" : "Like" %>
+              </a>
+              <a 
+                href="/edit/<%= post._id %>" 
+                class="text-zinc-400 hover:underline"
+              >
+                Edit
+              </a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -20,7 +20,7 @@ const isLoggedIn = (req, res, next) => {
     const token = req.cookies.token;
 
     if (!token) {
-        return res.status(401).send("You must be logged in");
+        res.redirect("/login");
     }
 
     try {
@@ -41,10 +41,53 @@ app.get("/login", (req, res)=>{
     res.render("login");
 })
 
-app.get("/profile", isLoggedIn, (req, res)=>{
-    console.log(req.user);
-    res.render("login");
-})
+app.get("/profile", isLoggedIn, async (req, res)=>{
+    let user = await userModel.findOne({email: req.user.email}).populate("post");
+    res.render("profile" , {user});
+});
+
+app.get("/like/:id", isLoggedIn, async (req, res) => {
+    let post = await postModel.findOne({ _id: req.params.id }).populate("user");
+
+    if(post.likes.indexOf(req.user.userid) === -1){
+        post.likes.push(req.user.userid);
+    }
+    else{
+        post.likes.splice(post.likes.indexOf(req.user.userid), 1);
+    }
+
+    
+    await post.save();
+    res.redirect("/profile"); // ✅ Correct usage of redirect
+});
+
+
+app.get("/edit/:id", isLoggedIn, async (req, res) => {
+    let post = await postModel.findOne({ _id: req.params.id }).populate("user");
+    res.render("edit" , {post});
+});
+
+
+app.post("/update/:id", isLoggedIn, async (req, res) => {
+    let post = await postModel.findOneAndUpdate({ _id: req.params.id }, {content: req.body.content});
+    res.redirect("/profile");
+});
+
+app.post("/post", isLoggedIn, async (req, res)=>{
+    let user = await userModel.findOne({email: req.user.email});
+    let {content} = req.body;
+    console.log("Form content:", content);
+
+    let post = await postModel.create({
+        user: user._id,
+        content
+    });
+
+    user.post.push(post._id);
+    await user.save();
+    res.redirect("/profile");
+
+});
 
 app.post('/register', async (req, res) => {
     let {email, password, username, name, age} = req.body;
@@ -92,7 +135,7 @@ app.post('/login', async (req, res) => {
         if (result) {
             let token = jwt.sign({ email: email, userid: user._id }, "shhhh");
             res.cookie("token", token); // ✅ Set cookie first
-            res.status(200).send("you can login"); // ✅ Then send response
+            res.status(200).redirect("/profile"); // ✅ Then send response
         } else {
             res.redirect("/login");
         }

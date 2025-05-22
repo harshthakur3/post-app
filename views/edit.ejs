@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Post</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-900 text-white min-h-screen relative overflow-hidden">
+
+  <!-- ========== Page Content ========== -->
+  <div class="relative z-10 flex justify-center items-start py-16 px-4 min-h-screen">
+    <div class="w-full max-w-2xl bg-zinc-800 border border-zinc-700 p-8 rounded-xl shadow-lg space-y-6">
+
+      <!-- Header -->
+      <div class="text-center">
+        <h2 class="text-3xl font-bold text-yellow-400">Edit Your Post</h2>
+        <p class="text-zinc-400 mt-1">Make changes and update your thoughts</p>
+      </div>
+
+      <!-- Edit Form -->
+      <form action="/update/<%= post._id %>" method="post" class="space-y-4">
+        <textarea 
+          name="content" 
+          rows="5"
+          class="w-full bg-zinc-900 border border-yellow-600 rounded-lg p-4 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 placeholder:text-zinc-500 resize-none" 
+          placeholder="Edit your content..."><%= post.content %></textarea>
+        
+        <div class="flex justify-between">
+          <input 
+            type="submit" 
+            value="Update Post" 
+            class="bg-yellow-500 hover:bg-yellow-600 text-zinc-900 font-semibold px-6 py-2 rounded-md transition duration-300 cursor-pointer"
+          />
+          <a 
+            href="/profile" 
+            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition text-sm"
+          >
+            Back
+          </a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========== Background Effect Section (Keep Separate for Clarity) ========== -->
+
+  <!-- Canvas used for animated background effect (styled like Aceternity beams) -->
+  <canvas id="beams-canvas" class="fixed inset-0 z-0 opacity-20 pointer-events-none"></canvas>
+
+  <!-- JavaScript to animate particle lines (Aceternity-style) -->
+  <script>
+    const canvas = document.getElementById('beams-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    // Set canvas size to full window
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Particle class
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 1;
+        this.vy = (Math.random() - 0.5) * 1;
+        this.radius = Math.random() * 1.5 + 1;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#facc15"; // Tailwind yellow-400
+        ctx.fill();
+      }
+    }
+
+    // Initialize particles
+    for (let i = 0; i < 120; i++) {
+      particles.push(new Particle());
+    }
+
+    // Draw lines between nearby particles
+    function connectParticles() {
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          let dx = particles[i].x - particles[j].x;
+          let dy = particles[i].y - particles[j].y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < 100) {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(250,204,21,0.08)"; // yellow line with low opacity
+            ctx.lineWidth = 1;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // Animation loop
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let particle of particles) {
+        particle.update();
+        particle.draw();
+      }
+      connectParticles();
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+
+</body>
+</html>

@@ -113,7 +113,7 @@ app.post('/register', async (req, res) => {
             //hume token cookie me save krwa dena hota hai
             let token = jwt.sign({email: email, userid: user._id}, "shhhh");
             res.cookie("token" , token); 
-            res.send("registered");
+            res.redirect("/login")
 
         })
     })
